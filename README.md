@@ -15,5 +15,5 @@
     Then the python file <code> tree_generator.py </code> is invoked which parses data in <code>output.txt</code> and creates a dictionary where keys are pids of parents and value is list of pids of child processes, this list is then used to create a tree and the tree is dumped as a json object to <code>tree.json</code> file which contains node values as the pid of every process.
 
 <h2>Results:</h2><br/>
-    The sample tree.json contains results for 6 consecutive fork calls. 
+    The sample <code>tree.json</code> contains results for 7 consecutive fork calls. 
 
