@@ -1,8 +1,11 @@
+// generating tree structure of fork calls
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/wait.h>
 // Concepts used : process (fork, exec), file (writing)
 
 int main()
@@ -25,7 +28,7 @@ int main()
         // Usage of file
         if(pid != 0)
         {
-            wait(pid);
+            waitpid(pid, NULL, 0);
             sprintf(buff, "PARENT %d CHILD %d\n", getpid(), pid);
             write(fd, buff, strlen(buff));
         }
@@ -35,10 +38,7 @@ int main()
     if(getpid() == first_parent)
     {
         if(fork() == 0)
-        {
-            printf("fork and exec\n");
-            execl("python", "python", "./tree_generator.py", (char*)0);
-        }    
+            execl("/usr/bin/python2.7", "python", "./tree_generator.py", NULL);    
     }
 
     return 0;
