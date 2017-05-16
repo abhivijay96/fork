@@ -1,55 +1,41 @@
-// TO Demonstrate usage of semaphores in C
-
 #include <stdio.h>
 #include <sys/sem.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <sys/ipc.h>
-#include <stdlib.h>
-
-// concepts used pthreads, semaphore
-// global semaphore shared by all threads
-
-sem_t semaphore;
-
-void* child(void *id)
-{
-    int* temp = (int *) id;
-    printf("Thread %d waiting for semaphore\n", *temp);
-    sem_wait(&semaphore);
-    // critical section here
-    sleep(5);
-    printf("Thread %d accessing the resource\n", *temp);
-    //free(temp);
-    sem_post(&semaphore);
-}
 
 void main()
 {
-     printf("Demonstrating usage of semaphores\n");
-     printf("Let's assume we have a resource, enter the number of threads that can access it simultaneously\n");
+    int key = ftok("key.txt", 8);
+    int id = semget(key, 1, IPC_CREAT|0666);
+    // struct sembuf
+    // {
+    //     ushort_t sem_num;
+    //     short sem_op;
+    //     short sem_flg;
+    // };
 
-     int res_size;
-     scanf("%d", &res_size);
+    int pid = fork();
 
-     int size;
-     printf("Enter the number of threads that you want to spawn\n");
-     scanf("%d", &size);
+    if(pid == 0)
+    {
+        printf("child waiting for semaphore\n");
+        struct sembuf s1;
+        s1.sem_num = 0;
+        s1.sem_op = -1;
+        s1.sem_flg = 0;
+        if(semop(id, &s1, 1) == -1)
+            printf("fail");
+        printf("child got lock\n");
+        sleep(2);
+    }
 
-     sem_init(&semaphore, 0, res_size);
-     int i;
-     pthread_t threads[size];
-
-     for(i = 0; i < size; i++)
-     {
-        int* k = (int *) malloc(sizeof(int));
-        *k = i;
-        pthread_create(&threads[i], NULL, child, (void *)k); 
-     }
-
-     for(i = 0; i < size; i++)
-     {
-         pthread_join(threads[i], NULL);
-     }
+    else
+    {
+        printf("parent waiting for semaphore\n");
+        printf("parent got lock\n");
+        sleep(2);
+        struct sembuf s1;
+        s1.sem_num = 0;
+        s1.sem_op = 1;
+        s1.sem_flg = 0;
+        semop(id, &s1, 1);
+    }
 }
